@@ -1,0 +1,10 @@
+﻿ipykernel
+jupyterlab
+notebook
+python-dotenv
+openai
+langgraph
+chromadb
+sentence-transformers
+typing_extensions
+pypdf
