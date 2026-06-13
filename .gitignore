@@ -1,35 +1,39 @@
 # Daily 학습 기록 업로드 제외 규칙
-# 기본은 모두 제외하고, dayXX 폴더의 수업용 파일명 패턴만 허용합니다.
+# 기본값은 전체 제외 후, 공개 가능한 학습 파일만 허용합니다.
 
-# 전체 제외
 *
 
-# 저장소 관리 문서만 허용
+# 저장소 관리 문서
 !.gitignore
 !/README.md
 !/readme.md
 
-# day01~day99 폴더 탐색 허용
-!day[0-9][0-9]/
-!day[0-9][0-9]/**/
+# 커리큘럼 분류 폴더
+!/1. Programming and Data Basics/
+!/1. Programming and Data Basics/**/
+!/2. Data Analysis, Machine Learning and Deep Learning/
+!/2. Data Analysis, Machine Learning and Deep Learning/**/
+!/3. LLM (Large Language Model)/
+!/3. LLM (Large Language Model)/**/
+!/4. AI Application Development/
+!/4. AI Application Development/.gitkeep
+!/5. Final Project/
+!/5. Final Project/.gitkeep
 
-# 수업일자 기반 파일명 허용
-!day[0-9][0-9]/**/day*.ipynb
-!day[0-9][0-9]/**/day*.py
-!day[0-9][0-9]/**/day*.md
-!day[0-9][0-9]/**/day*.txt
+# 일차별 학습 폴더와 선별 파일
+!*/day[0-9][0-9]/
+!*/day[0-9][0-9]/**/
+!*/day[0-9][0-9]/**/day*.ipynb
+!*/day[0-9][0-9]/**/day*.py
+!*/day[0-9][0-9]/**/day*.md
+!*/day[0-9][0-9]/**/day*.txt
+!*/day[0-9][0-9]/**/module_*.ipynb
+!*/day[0-9][0-9]/**/module_*.md
+!*/day[0-9][0-9]/requirements*.txt
+!*/day[0-9][0-9]/edu_env*.yml
+!*/day[0-9][0-9]/edu_env*.txt
 
-# 수업 모듈 정리 파일 허용
-!day[0-9][0-9]/**/module_*.ipynb
-!day[0-9][0-9]/**/module_*.md
-!day[0-9][0-9]/requirements*.txt
-!day[0-9][0-9]/edu_env*.yml
-!day[0-9][0-9]/edu_env*.txt
-
-# day61 멀티모달 수업용 점검 스크립트 허용
-!day61/*.py
-
-# 환경변수와 인증 정보는 항상 제외
+# 인증 정보와 개인 환경 파일
 .env
 .env.*
 *.pem
@@ -44,14 +48,12 @@
 *credential*
 *Credential*
 
-# 참고용 블로그/포스팅 산출물 제외
+# 개인 참고 자료와 임시 산출물
 *blog*
 *Blog*
-*블로그*
 *BLOG*
+*블로그*
 *_files/
-
-# 중복 사본과 임시 백업 제외
 * copy.*
 * Copy.*
 *_copy.*
@@ -61,7 +63,7 @@
 *.tmp
 *.temp
 
-# Python 실행 산출물과 가상환경 제외
+# Python 실행 산출물과 가상환경
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -72,7 +74,7 @@ __pycache__/
 venv/
 env/
 
-# JavaScript/Node 의존성과 빌드 산출물 제외
+# JavaScript/Node 의존성과 빌드 산출물
 node_modules/
 dist/
 build/
@@ -83,7 +85,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# 모델, 체크포인트, 파인튜닝 산출물 제외
+# 모델, 체크포인트, 학습 산출물
 hf_cache/
 wandb/
 checkpoint-*/
@@ -103,7 +105,7 @@ logs/
 *.joblib
 *.tfevents
 
-# 벡터 DB와 로컬 DB 제외
+# 로컬 DB와 벡터 DB
 chroma_db/
 chroma_db*/
 vector_db/
@@ -112,7 +114,7 @@ vector_db*/
 *.sqlite3
 *.db
 
-# 대용량 원본 데이터와 제출/결과 파일 제외
+# 대용량 데이터셋과 결과 파일
 data/
 dataset/
 datasets/
@@ -127,7 +129,7 @@ submission*.csv
 *.json
 *.jsonl
 
-# 압축파일과 패키지 산출물 제외
+# 압축 파일과 원본 미디어 자료
 *.zip
 *.Zip
 *.7z
@@ -135,8 +137,6 @@ submission*.csv
 *.gz
 *.tgz
 *.tar
-
-# 이미지, PDF, 발표자료 원본 제외
 *.png
 *.jpg
 *.jpeg
@@ -145,29 +145,32 @@ submission*.csv
 *.pdf
 *.pptx
 
-# 루트에 있는 업로드 대상 외 작업 폴더 제외
-/260528스터디준비/
-/3rd_project/
-/day_43/
-/day56/
-/day57/gpt2_dpo_results/
-/day57/gpt2_sft_results/
-/day61/hanja_multimodal_cleaning_tool/
-/day61/hanja_pipeline_tqdm_tool/
-/day61/hanja_rebuild_pipeline_package/
-/day61/hanja_rebuild_v2_package/
-/day61/hanja_rebuild_v2_work/
-/day61/hanja_v2_final_backup_20260611_003642/
+# 공개 제외를 유지해야 하는 실습 산출물 폴더
+*/day57/gpt2_dpo_results/
+*/day57/gpt2_sft_results/
+*/day61/chroma_db_vision/
+*/day61/docs_images/
+*/day61/docs_pdf/
+*/day61/hanja_multimodal_cleaning_tool/
+*/day61/hanja_pipeline_tqdm_tool/
+*/day61/hanja_rebuild_pipeline_package/
+*/day61/hanja_rebuild_v2_package/
+*/day61/hanja_rebuild_v2_work/
+*/day61/hanja_v2_final_backup_20260611_003642/
 
-# 루트 작업 파일 중 업로드 대상이 아닌 파일 제외
-/requirements.ipynb
-/requirements.txt
-/자연어-이미지 멀티 모달.zip
-/3rd_project.zip
-/day58.zip
-/day61.zip
+# 공개 대상으로 선별한 예외 파일
+!*/day56/client.py
+!*/day56/db_client.py
+!*/day56/db_server.py
+!*/day56/prj.txt
+!*/day56/rag_client.py
+!*/day56/rag_openai_client.py
+!*/day56/rag_server.py
+!*/day56/sample.db
+!*/day56/server.py
+!*/day61/*.py
 
-# 실제 키로 보이는 문자열 후보가 있어 정리 전까지 보류
-/day20/day20_00_review.ipynb
-/day20/day20_00_review.py
-/day23/day23_00_review.ipynb
+# 정리 전까지 보류하는 노트
+*day20_00_review.ipynb
+*day20_00_review.py
+*day23_00_review.ipynb
