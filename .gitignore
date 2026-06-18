@@ -33,6 +33,12 @@
 !*/day[0-9][0-9]/edu_env*.yml
 !*/day[0-9][0-9]/edu_env*.txt
 
+# 웹 프론트엔드 실습 소스 파일
+!*/day[0-9][0-9]/**/*.html
+!*/day[0-9][0-9]/**/*.css
+!*/day[0-9][0-9]/**/*.scss
+!*/day[0-9][0-9]/**/*.js
+
 # 인증 정보와 개인 환경 파일
 .env
 .env.*
@@ -157,6 +163,8 @@ submission*.csv
 */day61/hanja_rebuild_v2_package/
 */day61/hanja_rebuild_v2_work/
 */day61/hanja_v2_final_backup_20260611_003642/
+*/day67/adminhmd-1.0.0/
+*/day67/feane-1.0.0/
 
 # 공개 대상으로 선별한 예외 파일
 !*/day56/client.py
@@ -169,6 +177,7 @@ submission*.csv
 !*/day56/sample.db
 !*/day56/server.py
 !*/day61/*.py
+!*/day67/06_flexbox_advanced/01.md
 
 # 정리 전까지 보류하는 노트
 *day20_00_review.ipynb
