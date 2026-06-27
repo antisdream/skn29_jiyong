@@ -17,6 +17,8 @@
 !/3. LLM (Large Language Model)/**/
 !/4. AI Application Development/
 !/4. AI Application Development/.gitkeep
+!/4. AI Application Development/nginx/
+!/4. AI Application Development/nginx/**
 !/5. Final Project/
 !/5. Final Project/.gitkeep
 
@@ -33,15 +35,26 @@
 !*/day[0-9][0-9]/edu_env*.yml
 !*/day[0-9][0-9]/edu_env*.txt
 
+# Django/FastAPI 등 프로젝트형 실습 소스 파일
+!*/day[0-9][0-9]/*.py
+!*/day[0-9][0-9]/**/*.py
+!*/day[0-9][0-9]/*.md
+!*/day[0-9][0-9]/**/*.md
+
 # 웹 프론트엔드 실습 소스 파일
 !*/day[0-9][0-9]/**/*.html
 !*/day[0-9][0-9]/**/*.css
 !*/day[0-9][0-9]/**/*.scss
 !*/day[0-9][0-9]/**/*.js
+!*/day[0-9][0-9]/**/*.conf
+
+# Django 배포용 정적 파일 수집 산출물
+*/day[0-9][0-9]/staticfiles/
 
 # 인증 정보와 개인 환경 파일
 .env
 .env.*
+!.env.template
 *.pem
 *.key
 *.crt
@@ -65,6 +78,7 @@
 *_copy.*
 *_backup*
 *backup*
+*.log
 *.bak
 *.tmp
 *.temp
