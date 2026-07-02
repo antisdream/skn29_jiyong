@@ -1,0 +1,235 @@
+# RDS 생성
+1. 콘솔에서 RDS 검색 - Aurora and RDS
+2. 전체 구성으로 생성 - 엔진은 PostgreSQL
+3. 템플릿 - 프리티어
+4. DB 인스턴스 식별자 - skn29-db
+5. 마스터 암호 생성 = 실제 비밀번호는 문서에 적지 않고 `.env`에만 저장
+6. 기존 VPC 보안 그룹 - default 해제하고 ec2에서 설정한 보안그룹 skn29-sg 선택
+7. 맨 아래 추가 구성 - 초기 데이터베이스 이름 - postgres  (주의! 데이터베이스 이름에 하이픈을 인식 못할 가능성 있음)
+
+# RDS 보안그룹에 EC2 접근 허용
+1. EC2 콘솔에접속 - 보안그룹 - 인바운드 규칙 편집 - 규칙추가
+ - 유형 PostgreSQL
+ - 소스:검색버튼- EC2용 보안그룹 skn29-sg 클릭 후 저장
+
+# 연결테스트
+```
+sudo apt install -y postgresql-client
+psql -h <RDS 엔드포인트> -U postgres -d postgres
+```
+
+# 엔드포인트 확인
+생성된 RDS 클릭하면 다음과 같은 화면이 보임 - `<RDS 엔드포인트>`
+```
+연결 단계
+아래 단계에 따라 도구에 각 단계의 코드를 붙여넣고 명령을 실행하세요. 스니펫은 인증 구성을 동적으로 반영합니다.
+curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
+export RDSHOST="<RDS 엔드포인트>"
+psql "host=$RDSHOST port=5432 dbname=postgres user=postgres sslmode=verify-full sslrootcert=./global-bundle.pem"
+```
+
+
+# Django RDS 연결
+```
+cd /home/ubuntu/DjangoProject
+docker exec -it django-dev bash
+cd /workspace
+source venv/bin/activate
+
+# 드라이버 설치 및 패키지
+pip install psycopg2-binary python-dotenv
+```
+
+config/settings.py 수정
+```
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),   # RDS 엔드포인트
+        'PORT': '5432',
+    }
+}
+```
+
+.env 생성
+```
+vim /home/ubuntu/DjangoProject/.env
+
+USE_RDS_DATABASE=1
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=<RDS 비밀번호>
+DB_HOST=<RDS 엔드포인트>
+DB_PORT=5432
+DB_SSLMODE=require
+# --> RDS->DB 클릭->엔드포인트 항목
+```
+
+# gitignore 설정
+echo ".env" >> /home/ubuntu/DjangoProject/.gitignore
+
+# 마이그레이션 수행
+```
+python manage.py migrate
+# Django 서비스 재시작
+sudo systemctl restart django-gunicorn
+
+# DB 접속
+psql -h <RDS엔드포인트> -U postgres -d <내DB이름>
+# 테이블 목록 조회
+\dt
+
+# 특정 테이블 조회
+select * from <테이블명>;
+```
+
+# DBeaver 등 외부 tool 연결
+- host : 엔드포인트
+- ssh탭을 클릭해서 pem 파일 연결  -모바텀x 연결과정과 비슷
+
+# S3 버킷생성
+ - 이름만 고유하게 작성하고 생성
+```
+권한탭에서
+
+퍼블릭엑세스 차단 모두 해제
+버킷 정책을다음과 같이 설정
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicRead",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::<S3 버킷명>/*"
+        }
+    ]
+}
+```
+
+
+ # EC2에 S3 접근용 IAM 역활 연결
+ 1. IAM 검색 및 이동 - 왼쪽 역확(Role) - 역활 만들기
+ 2. 서비스  : EC2선택 - 권한 정책추가:AmazonS3FullAccess
+ 3. 역활이름 : skn29-ec2-s3-role - 생성
+
+# ec2 인스턴트 클릭
+1. 오른쪽 상단에 IAM역활 수정 - 만든 IAM을 선택하고 - 업데이트
+
+# ec2, s3 연동테스트
+pip install boto3
+```iam_test.py
+import boto3
+s3 = boto3.client('s3')
+response = s3.list_buckets()
+for bocket in response['Buckets']:
+    print(bucket['Name'])
+```
+
+# Django s3패키지 설치  통신을 위해서
+pip install django-storages
+
+config/settings.py 수정
+```
+INSTALLED_APPS = [
+    # ... 기존 앱 ...
+    'storages',
+]
+
+# S3 버킷 정보 설정 (IAM 역할로 인증하므로 AWS_ACCESS_KEY_ID 등은 필요 없습니다)
+AWS_STORAGE_BUCKET_NAME = '<S3 버킷명>'
+AWS_S3_REGION_NAME = 'ap-northeast-2'
+
+# Django 4.2+ 권장 STORAGES 설정 방식
+STORAGES = {
+    # 미디어 파일 (업로드 이미지 등) 백엔드 설정
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    # 정적 파일 (css, js 등) 백엔드 설정
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    },
+}
+```
+# 정적파일 수집 및 동기화
+python manage.py collectstatic --noinput
+
+# 의존성 패키지 생성 및 업데이트
+pip freeze > requirements.txt
+
+# 탄력적ip(Elastic IP) 할당
+- 주의사항 EC2하고 연결된 상태에서는 무료 하지만. 연결하지않으면 또는 방치하면 시간 당 과금됨
+- ec2-네트웍 및 보안(왼쪽메뉴) - 탄력적ip - 할당
+- 생성된 ip클릭 -  탄력적ip주소연결
+- 인스턴스선택- skn29-server -연결
+- ec2 인스턴스 세부정보에서 탄력적ip에 보이는지 확인
+
+#  배포자동화 아키텍처
+```
+로컬에서 코드 수정 -> github actions 트리거 -> ec2 ssh접속(actions가 자동수행)
+-> git pull -> docker exec django-dev -> pip install -> makemigrations -> migrate -> collectstatic -> django-gunicorn/nginx 재시작
+```
+
+# github Secrets등록
+```
+메뉴상단의 settings - secrets and variables - Actions -Secrets(tab) - new repository secret
+
+EC2_HOST   탄력적ip(없으면 퍼블릭ip)
+EC2_USER   ubuntu
+EC2_SSH_KEY  .pem 키 파일 전체... --BEGIN 부터 --END 전부
+각각 등록
+```
+
+# 보안그룹에서 GitHub Actions runner가 SSH 접속할 수 있도록 22번 인바운드 허용
+# 실습 편의상 0.0.0.0/0로 열 수 있지만, 작업 후에는 가능하면 내 IP 또는 제한된 대역으로 줄이는 것이 안전함
+
+# EC2에서 Github Actions ssh 배포 허용설정
+sudo cat /etc/sudoers.d/90-cloud-init-users
+
+# 워크플로작성 - 로컬pc에 작성(git과 동기화 후에.. 또는 없으면 git clone)
+.github/workflows/deploy.yml
+```
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 60s
+          command_timeout: 20m
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/DjangoProject
+            git pull --ff-only origin main
+            docker exec django-dev bash -lc 'cd /workspace && source venv/bin/activate && pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate --noinput && python manage.py collectstatic --noinput'
+            sudo systemctl restart django-gunicorn nginx
+            systemctl is-active django-gunicorn
+            systemctl is-active nginx
+```
+
+# github 의 actions 탭에서 오류 없는지 확인
