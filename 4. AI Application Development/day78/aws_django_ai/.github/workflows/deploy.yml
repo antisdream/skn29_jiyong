@@ -1,0 +1,32 @@
+name: Deploy Chatbot to EC2
+
+on:
+  push:
+    branches: [ main ] # main 브랜치로 push 발생 시 배포 구동
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, skn29-django-ec2]
+    steps:
+      - name: Deploy on EC2
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ~/myproject
+          source venv/bin/activate
+          git pull --ff-only origin main
+          pip install -r requirements.txt
+          python manage.py migrate --no-input
+          python manage.py collectstatic --no-input
+          sudo systemctl restart gunicorn nginx
+          systemctl is-active gunicorn
+          systemctl is-active nginx
+          ready=0
+          for i in $(seq 1 15); do
+            if curl -fsS -o /dev/null http://127.0.0.1/admin/login/; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" -eq 1

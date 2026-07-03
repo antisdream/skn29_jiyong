@@ -32,6 +32,7 @@
 !*/day[0-9][0-9]/**/module_*.ipynb
 !*/day[0-9][0-9]/**/module_*.md
 !*/day[0-9][0-9]/requirements*.txt
+!*/day[0-9][0-9]/**/requirements*.txt
 !*/day[0-9][0-9]/edu_env*.yml
 !*/day[0-9][0-9]/edu_env*.txt
 
@@ -47,6 +48,10 @@
 !*/day[0-9][0-9]/**/*.scss
 !*/day[0-9][0-9]/**/*.js
 !*/day[0-9][0-9]/**/*.conf
+!*/day[0-9][0-9]/**/.github/
+!*/day[0-9][0-9]/**/.github/**
+!*/day[0-9][0-9]/**/.github/workflows/
+!*/day[0-9][0-9]/**/.github/workflows/*.yml
 
 # Django 배포용 정적 파일 수집 산출물
 */day[0-9][0-9]/staticfiles/
